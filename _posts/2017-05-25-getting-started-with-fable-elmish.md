@@ -4,7 +4,7 @@ title: Getting Started with Fable Elmish
 excerpt: Starting with a template
 date: 2017-05-25
 modified: 2017-05-25
-categories: [F#]
+categories: [FSharp]
 tags: [Fable, Elmish]
 comments: true
 share: true
@@ -12,8 +12,8 @@ share: true
 
 ### Getting the Tools
 
-[__.NET Core SDK__][microsoft-sdk-core]
-[__Node.js__][node]
+- [__.NET Core SDK__][microsoft-sdk-core]
+- [__Node.js__][node]
 
 ### Creating a project from the template
 
@@ -41,6 +41,7 @@ Now you need to download your packages and libraries to run the project properly
 yarn
 dotnet restore
 ```
+
 If you have an error with yarn not being a valid command, make sure that you install Node.js and restart your computer.
 The commands can take a long time to finish so make sure that you are able to input new command before continuing on 
 
