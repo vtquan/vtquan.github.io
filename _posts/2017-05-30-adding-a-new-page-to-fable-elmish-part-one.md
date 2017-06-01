@@ -1,6 +1,6 @@
 ---
 layout: single
-title: Adding a new page to Fable Elmish: Part 1
+title: Adding a new page to Fable Elmish, Part 1
 excerpt: Starting with a template
 date: 2017-05-30
 categories: [FSharp]
@@ -121,7 +121,7 @@ let root =
         [ str "This template is a simple application build with Fable + Elmish + React." ] ]
 ```
 
-The root function return the html that will be shown when the page is loaded.
+The root function return the html that will be shown when the page is loaded. What you just did is changing the header to display "New Page" instead of "About Page"
 
 ### Setting up the Handlers
 
@@ -158,9 +158,9 @@ let toHash page =
   | NewPage -> "#newpage"
 ```
 
-Be aware that I made two changes. I add a NewPage union case to Page. I call it NewPage to point out that you do not need to name it the same as your page folder which is called NewInfo. 
+Be aware that I made two changes. I add a NewPage union case to Page. That mean that Page could be either Home, Counter, About, or NewPage. I call it NewPage to point out that you do not need to name it the same as your page folder which is called NewInfo. 
 Then I add a new pattern rule in the toHash function for the new union case. The "#newpage" represent what get added to the url when you open the page. 
-For example, clicking on the Home link will change the url to [http://localhost:8080/#home](http://localhost:8080/#home)
+For example, clicking on the Home link will change the url to [http://localhost:8080/#home](http://localhost:8080/#home). In summary, you add a new type of Page called NewPage and that the url for it is "#newpage"
 
 Now to add your link to the side menu. First open up src/App.fs and edit 
 
@@ -195,9 +195,20 @@ let menu currentPage =
           menuItem "New Page" Page.NewPage currentPage ] ]
 ```
 
-This will add a link to your page inside the side menu. Watch out for the closing ]] and make sure you didn't duplicate them or put them at the wrong spot.  
+This will add a link to your page inside the side menu. Watch out for the closing ]] and make sure you didn't duplicate them or put them at the wrong spot. The function menuItem is part of the template and it creates a link with the text "New Page" and it link to Page of type NewPage. 
+The currentPage is so that the link would looks different when you are already looking at that page. I included the menuItem function code below so you can how it work
 
-Still inside App.fs edit you root function from
+```fsharp
+let menuItem label page currentPage =
+    li
+      [ ]
+      [ a
+          [ classList [ "is-active", page = currentPage ]
+            Href (toHash page) ]
+          [ str label ] ]
+``` 
+
+Still inside App.fs, edit your root function from
 
 ```fsharp
 let root model dispatch =
@@ -223,7 +234,7 @@ let root model dispatch =
 ```
 
 Looking at the changes closely, I add a pattern rule for the NewPage union case I created. 
-But where did NewInfo.View.root came from? Looking at the code, each pattern rule calls a root function from different module. 
+This code is checking the Page that it is getting and depending on the kind of Page, it calls a root function from different module. 
 Now remember earlier, the top line of your NewInfo/View.fs was changed to
 
 ```fsharp
