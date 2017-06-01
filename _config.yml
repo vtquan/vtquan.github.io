@@ -11,7 +11,7 @@ title                    : "Viquoc Quan's Blog"
 title_separator          : "-"
 name                     : "Viquoc Quan"
 description              : ""
-url                      : "https://vtquan.github.io/"
+url                      : "https://vtquan.github.io"
 gh_repo                  : "https://github.com/vtquan/vtquan.github.io"
 teaser                   : # filename of teaser fallback teaser image placed in /images/, .e.g. "500x300.png"
 # breadcrumbs            : false # true, false (default)

@@ -80,19 +80,19 @@ You might noticed that I include <!-- NewInfo --> in the code above. This is a c
 
 Now open the NewInfo/View.fs file and at the first line where it said 
 
-```fsharp
+```fs
 module Info.View
 ```
 
 and replace it with
 
-```fsharp
+```fs
 module NewInfo.View
 ```
 
 This change the domain of your file from Info.View to NewInfo.View. Then modify the page so that you can tell the difference from the info page. Change the following code
 
-```fsharp
+```fs
 let root =
   div
     [ ClassName "content" ]
@@ -106,7 +106,7 @@ let root =
 
 to
 
-```fsharp
+```fs
 
 let root =
   div
@@ -126,7 +126,7 @@ The root function return the html that will be shown when the page is loaded. Wh
 You will now setup a link to your new page and create the code that serves it. 
 First open up src/Global.fs and edit
 
-```fsharp
+```fs
 type Page =
   | Home
   | Counter
@@ -141,7 +141,7 @@ let toHash page =
 
 to this
 
-```fsharp
+```fs
 type Page =
   | Home
   | Counter
@@ -162,7 +162,7 @@ For example, clicking on the Home link will change the url to [http://localhost:
 
 Now to add your link to the side menu. First open up src/App.fs and edit 
 
-```fsharp
+```fs
 let menu currentPage =
   aside
     [ ClassName "menu" ]
