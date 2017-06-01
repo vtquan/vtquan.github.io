@@ -14,7 +14,7 @@ share: true
 Start with the new project you created from the [previous post]({% post_url 2017-05-25-getting-started-with-fable-elmish %}). This example will reuse the existing page so that we can focus on just adding the page to the project. 
 First, navigate to the src folder and create a new folder named NewInfo. Then go into the Info folder and copy View.fs and paste it inside the NewInfo folder. Your folder structure should look like this
 
-![Proper folder structure]({{ site.url }}assets/images/adding-a-new-page-to-fable-elmish-part-one/folder-structure.png)
+![Proper folder structure]({{ site.url }}/assets/images/adding-a-new-page-to-fable-elmish-part-one/folder-structure.png)
 
 For the page to compiles properly, you need to add the page to your project. Open up the .fsproj in the root folder of your project and add the following code inside the <ItemGroup></ItemGroup> tag.
 
