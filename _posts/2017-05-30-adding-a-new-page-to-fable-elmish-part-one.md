@@ -1,7 +1,7 @@
 ---
 layout: single
 title: Adding a new page to Fable Elmish, Part 1
-excerpt: Starting with a template
+excerpt: Adding a static page to your template
 date: 2017-05-30
 categories: [FSharp]
 tags: [Fable, Elmish]
