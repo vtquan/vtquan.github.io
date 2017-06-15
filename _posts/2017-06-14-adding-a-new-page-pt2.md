@@ -2,7 +2,7 @@
 layout: single
 title: Adding a new page to Fable Elmish, Part 2
 excerpt: Adding a dynamic page to your template
-date: 2017-05-14
+date: 2017-06-14
 categories: [FSharp]
 tags: [Fable, Elmish]
 comments: true
@@ -19,7 +19,7 @@ dotnet new fable-elmish-react -n NewComplexPageElmish
 cd NewComplexPageElmish
 yarn
 dotnet restore
-``
+```
 
 Go inside the "src" folder of your project and make a copy of the "Counter" folder. Named the copy "NewCounter". There are 3 files inside the folder: State.fs, Types.fs, and View.fs. Now to change the domain of the files. Open all 3 of them and edit the top line where it said "module Counter.View" or "module Counter.State" and change it to "module NewCounter.View" or "module NewCounter.State" respectively. This change the domain of the file from "Counter" to "NewCounter"
 
@@ -70,6 +70,7 @@ As a reminder, the .fsproj file show the compile order of the files. Where you p
 <!-- Global to the app -->
 <Compile Include="src/Global.fs" />
 ```
+
 and before
 
 ```xml
@@ -116,11 +117,11 @@ let root model dispatch =
       div [ ClassName "column" ] [ ] ]
 ```
 
-This changes our page to display "Our New Counter value: " instead of "Counter value: " like the original Counter page.
+This changes our page to display "Our New Counter value: " instead of "Counter value: " in the original Counter page.
 
-### Setting up the Handlers
+### Editing the Discriminated Union and Record
 
-Same as the previous blog post, we need to add a union case for our new page. Then we modify the toHash function to give an url for the new page. Open up "src/Global.fs" and modify the following
+Same as the previous blog post, we need to change the Page discriminated union to include our new page. Then we modify the toHash function to give an url for the new page. Open up "src/Global.fs" and modify the following
 
 ```fsharp
 type Page =
@@ -186,6 +187,8 @@ type Model = {
 
 Both the Message and Model that we are using is in the "src/NewCounter/Types.fs" and I recommend taking a look at it to get an idea of their purpose.
 
+### Adding a Link to your new Page
+
 Now to add your link to the side menu so we can access the page. Open up "src/App.fs" and edit
 
 ```fsharp
@@ -223,7 +226,9 @@ If you run the project you should see the new link on the side menu. I included 
 
 ![Menu with new link]({{ site.url }}/assets/images/adding-a-new-page-pt2/menu-link.png)
 
-Now to make our application handles our link. Edit the root function in App.fs so that
+### Creating Page Handlers
+
+Now to make the supporting code to handle the page change. Edit the root function in App.fs so that
 
 ```fsharp
 let root model dispatch =
@@ -286,6 +291,7 @@ let toHash page =
 
 Since we use "#newcounter" here, we use "newcounter" inside the pageParser function.
 
+
 While still in "src/State.fs" edit
 
 ```fsharp
@@ -317,19 +323,28 @@ let init result =
         newCounter = newCounterModel }
   model, Cmd.batch [ cmd
                      Cmd.map CounterMsg counterCmd
-                     Cmd.map HomeMsg homeCmd ]
+                     Cmd.map HomeMsg homeCmd 
+                     Cmd.map NewCounterMsg newCounterCmd ]
 ```
 
-There are two changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounter`` and ``newCounterCmd``. To understand ``newCounter = newCounterModel`` part, look at the surrounding code
+There are two changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounter`` and ``newCounterCmd``. 
+
+To understand ``newCounter = newCounterModel`` part, look at the surrounding code
 
 ```fsharp
-{ currentPage = Home
-  counter = counter
-  home = home 
-  newCounter = newCounter }
+let (model, cmd) =
+    urlUpdate result
+      { currentPage = Home
+        counter = counter
+        home = home 
+        newCounter = newCounterModel }
 ```
 
-In F#, this is a record expression. Simply put, it is how to create a record. The code create a Model record that is defined in "src/Types.fs" and set the the ``newCounter`` value to the ``newCounterModel`` that you created.
+The record expression on a new line might be confusing but it is just a parameter for the ``urlUpdate`` function along with result. The result of the function is put into the values ``model`` and ``cmd``.
+
+The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` is to add the new Message and Command that we got to the list of commands for Elmish to keep track of.
+
+### Handling Messages and Models
 
 Finally, to get the application to handle the Message that your page will send. While still in "src/State.fs", change the following
 
