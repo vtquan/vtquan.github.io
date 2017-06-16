@@ -11,7 +11,7 @@ share: true
 
 ### Creating a new page
 
-Same as the [previous post]({% post_url 2017-05-25-getting-started-with-fable-elmish %}). We will use an existing page to focus only on the supporting code that handles the page. This time we will reuse the Counter page
+A variation on the [previous post]({% post_url 2017-05-30-adding-a-new-page-pt1 %}). This time, we'll be adding a dynamic page.
 Run the following command from your terminal or console to create a new project. 
 
 ```
@@ -21,9 +21,9 @@ yarn
 dotnet restore
 ```
 
-Go inside the "src" folder of your project and make a copy of the "Counter" folder. Named the copy "NewCounter". There are 3 files inside the folder: State.fs, Types.fs, and View.fs. Now to change the domain of the files. Open all 3 of them and edit the top line where it said "module Counter.View" or "module Counter.State" and change it to "module NewCounter.View" or "module NewCounter.State" respectively. This change the domain of the file from "Counter" to "NewCounter"
+We will reuse the Counter page to simplify the steps. Go inside the "src" folder of your project and make a copy of the "Counter" folder. Named the copy "NewCounter". There are 3 files inside the folder: State.fs, Types.fs, and View.fs. Now to change the domain of the files. Open all 3 of them and edit the top line where it said ``module Counter.View`` or ``module Counter.State`` and change it to ``module NewCounter.View`` or ``module NewCounter.State`` respectively. This changes the domain of the file from Counter to NewCounter
 
-Now open the NewComplexPageElmish.fsproj file in the root of your project and modify the file to look like the following.
+Now to add the files to the project. Open the NewComplexPageElmish.fsproj file in the root of your project and modify the file to look like the following.
 
 ```xml
 <Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
@@ -64,21 +64,7 @@ Now open the NewComplexPageElmish.fsproj file in the root of your project and mo
 
 This will tell the project to compile the newly added files. 
 
-As a reminder, the .fsproj file show the compile order of the files. Where you place the the code affect the compilation. For the code above, "src/Global.fs" will be compiled before "src/App.fs" In general, you will want to add your file after
-
-```xml
-<!-- Global to the app -->
-<Compile Include="src/Global.fs" />
-```
-
-and before
-
-```xml
-<!-- App -->
-<Compile Include="src/Types.fs" />
-<Compile Include="src/State.fs" />
-<Compile Include="src/App.fs" />
-```
+As a reminder, the .fsproj file show the compile order of the files. Where you place the the code affect the compilation. For the code above, "src/Global.fs" will be compiled before "src/App.fs"
 
 Now let's change the page slightly so we can tell the difference. Modify the following in View.fs
 
@@ -96,7 +82,6 @@ let root model dispatch =
       simpleButton "-1" Decrement dispatch
       simpleButton "Reset" Reset dispatch
       div [ ClassName "column" ] [ ] ]
-
 ```
 
 to
@@ -117,9 +102,9 @@ let root model dispatch =
       div [ ClassName "column" ] [ ] ]
 ```
 
-This changes our page to display "Our New Counter value: " instead of "Counter value: " in the original Counter page.
+This changes the page to display "Our New Counter value: " instead of "Counter value: " in the original Counter page.
 
-### Editing the Discriminated Union and Record
+### Adding 
 
 Same as the previous blog post, we need to change the Page discriminated union to include our new page. Then we modify the toHash function to give an url for the new page. Open up "src/Global.fs" and modify the following
 
@@ -153,7 +138,7 @@ let toHash page =
   | NewCounter -> "#newcounter"
 ```
 
->Unlike the previous page where we added a page with no functionality. In the Elm architecture, and therefore Elmish, page actions are done through Message and Model. Messages are the the command telling the site what function to run. We can have different types of Messages to run different functions. Models are objects that contain the data that the page can use to either display or perform functions on.
+>In the previous post, we added a page with no functionality. To have the page do something in the Elm architecture, and therefore Elmish, we need to use Message and Model. Messages are the the command telling the site what functions to run. We can have different types of Messages to run different functions. Models are objects that contain the data that the page can use to either display or perform functions on.
 
 Since our new page have the same functionality of the Counter page. We can reuse the Message and Model from it. However, when we copy the files, we created a new Message and Model so let's use them. To use the new Message and Model, modify "src/Types.fs" from
 
@@ -228,7 +213,7 @@ If you run the project you should see the new link on the side menu. I included 
 
 ### Creating Page Handlers
 
-Now to make the supporting code to handle the page change. Edit the root function in App.fs so that
+Now to make the supporting code to handle the page change. Edit the root function in "src/App.fs" so that
 
 ```fsharp
 let root model dispatch =
@@ -253,7 +238,7 @@ let root model dispatch =
 	| NewCounter -> NewCounter.View.root model.newCounter (NewCounterMsg >> dispatch)
 ```
 
-This code detects the kind of Page that it recieved and return a ReactElement. In the previous blog post, we create an ReactElement with only the root function since the page was static. This time, we also need to give the Model and Message since the page is dynamic.
+This code detects the the new Page and call the right root function. In the previous blog post, the root function of the static page require no parameter. This time, we also need to pass the Model and Message since the page is dynamic.
 
 Now to help the application get the right page when navigating to an URL. Edit "src/State.fs" from
 
@@ -289,8 +274,7 @@ let toHash page =
   | NewCounter -> "#newcounter"
 ```
 
-Since we use "#newcounter" here, we use "newcounter" inside the pageParser function.
-
+Since we use "#**newcounter**" here, we use "**newcounter**" inside the pageParser function.
 
 While still in "src/State.fs" edit
 
@@ -327,7 +311,7 @@ let init result =
                      Cmd.map NewCounterMsg newCounterCmd ]
 ```
 
-There are two changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounter`` and ``newCounterCmd``. 
+There are three changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounter`` and ``newCounterCmd``. 
 
 To understand ``newCounter = newCounterModel`` part, look at the surrounding code
 
@@ -340,13 +324,13 @@ let (model, cmd) =
         newCounter = newCounterModel }
 ```
 
-The record expression on a new line might be confusing but it is just a parameter for the ``urlUpdate`` function along with result. The result of the function is put into the values ``model`` and ``cmd``.
+The record on a new line might be confusing but it is just a parameter for the ``urlUpdate`` function along with result. The result of the function is put into the values ``model`` and ``cmd``.
 
-The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` is to add the new Message and Command that we got to the list of commands for Elmish to keep track of.
+The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` is to add the new Message and Command that we got to the list of commands for Elmish to keeps track of.
 
 ### Handling Messages and Models
 
-Finally, to get the application to handle the Message that your page will send. While still in "src/State.fs", change the following
+Finally, time to tell the application how to handle your Message. While still in "src/State.fs", change the following
 
 ```fsharp
 let update msg model =
