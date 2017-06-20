@@ -68,7 +68,7 @@ As a reminder, the .fsproj file show the compile order of the files. Where you p
 
 Now let's change the page slightly so we can tell the difference. Modify the following in View.fs
 
-```fsharp
+``` 
 let root model dispatch =
   div
     [ ClassName "columns is-vcentered" ]
@@ -86,7 +86,7 @@ let root model dispatch =
 
 to
 
-```fsharp
+``` 
 let root model dispatch =
   div
     [ ClassName "columns is-vcentered" ]
@@ -108,7 +108,7 @@ This changes the page to display "Our New Counter value: " instead of "Counter v
 
 Same as the previous blog post, we need to change the Page discriminated union to include our new page. Then we modify the toHash function to give an url for the new page. Open up "src/Global.fs" and modify the following
 
-```fsharp
+``` 
 type Page =
   | Home
   | Counter
@@ -123,7 +123,7 @@ let toHash page =
 
 to this
 
-```fsharp
+``` 
 type Page =
   | Home
   | Counter
@@ -142,7 +142,7 @@ let toHash page =
 
 Since our new page have the same functionality of the Counter page. We can reuse the Message and Model from it. However, when we copy the files, we created a new Message and Model so let's use them. To use the new Message and Model, modify "src/Types.fs" from
 
-```fsharp
+``` 
 type Msg =
   | CounterMsg of Counter.Types.Msg
   | HomeMsg of Home.Types.Msg
@@ -156,7 +156,7 @@ type Model = {
 
 to
 
-```fsharp
+``` 
 type Msg =
   | CounterMsg of Counter.Types.Msg
   | HomeMsg of Home.Types.Msg
@@ -176,7 +176,7 @@ Both the Message and Model that we are using is in the "src/NewCounter/Types.fs"
 
 Now to add your link to the side menu so we can access the page. Open up "src/App.fs" and edit
 
-```fsharp
+``` 
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -192,7 +192,7 @@ let menu currentPage =
 
 so that it look like this
 
-```fsharp
+``` 
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -215,7 +215,7 @@ If you run the project you should see the new link on the side menu. I included 
 
 Now to make the supporting code to handle the page change. Edit the root function in "src/App.fs" so that
 
-```fsharp
+``` 
 let root model dispatch =
 
   let pageHtml =
@@ -227,7 +227,7 @@ let root model dispatch =
 
 looks like
 
-```fsharp
+``` 
 let root model dispatch =
 
   let pageHtml =
@@ -242,7 +242,7 @@ This code detects the the new Page and call the right root function. In the prev
 
 Now to help the application get the right page when navigating to an URL. Edit "src/State.fs" from
 
-```fsharp
+``` 
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -253,7 +253,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 to
 
-```fsharp
+``` 
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -265,7 +265,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 Now the application can load the right page. Note that "newcounter" come from the toHash function in "src/Global.fs" 
 
-```fsharp
+``` 
 let toHash page =
   match page with
   | About -> "#about"
@@ -278,7 +278,7 @@ Since we use "#**newcounter**" here, we use "**newcounter**" inside the pagePars
 
 While still in "src/State.fs" edit
 
-```fsharp
+``` 
 let init result =
   let (counter, counterCmd) = Counter.State.init()
   let (home, homeCmd) = Home.State.init()
@@ -315,7 +315,7 @@ There are three changes here. First is ``let (newCounterModel, newCounterCmd) = 
 
 To understand ``newCounter = newCounterModel`` part, look at the surrounding code
 
-```fsharp
+``` 
 let (model, cmd) =
     urlUpdate result
       { currentPage = Home
@@ -332,7 +332,7 @@ The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` is to add the new
 
 Finally, time to tell the application how to handle your Message. While still in "src/State.fs", change the following
 
-```fsharp
+``` 
 let update msg model =
   match msg with
   | CounterMsg msg ->
@@ -345,7 +345,7 @@ let update msg model =
 
 to
 
-```fsharp
+``` 
 let update msg model =
   match msg with
   | CounterMsg msg ->
