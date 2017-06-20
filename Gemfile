@@ -7,6 +7,5 @@ group :jekyll_plugins do
   gem "jekyll-sitemap"
   gem "jekyll-gist"
   gem "jekyll-feed"
-  gem "jemoji"
-  gem "rouge"
+  gem 'rouge', '~> 2.1'
 end
