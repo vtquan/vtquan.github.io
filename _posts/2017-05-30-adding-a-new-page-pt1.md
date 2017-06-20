@@ -80,19 +80,19 @@ You might noticed that I include <!-- NewInfo --> in the code above. This is a c
 
 Now open the NewInfo/View.fs file and at the first line where it said 
 
-```fsharp
+``` 
 module Info.View
 ```
 
 and replace it with
 
-```fsharp
+``` 
 module NewInfo.View
 ```
 
 This change the domain of your file from Info.View to NewInfo.View. Then modify the page so that you can tell the difference from the info page. Change the following code
 
-```fsharp
+``` 
 let root =
   div
     [ ClassName "content" ]
@@ -106,7 +106,7 @@ let root =
 
 to
 
-```fsharp
+``` 
 let root =
   div
     [ ClassName "content" ]
@@ -125,7 +125,7 @@ The root function return the html that will be shown when the page is loaded. Wh
 You will now setup a link to your new page and create the code that serves it. 
 First open up src/Global.fs and edit
 
-```fsharp
+``` 
 type Page =
   | Home
   | Counter
@@ -140,7 +140,7 @@ let toHash page =
 
 to this
 
-```fsharp
+``` 
 type Page =
   | Home
   | Counter
@@ -161,7 +161,7 @@ For example, clicking on the Home link will change the url to [http://localhost:
 
 Now to add your link to the side menu. First open up src/App.fs and edit 
 
-```fsharp
+``` 
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -177,7 +177,7 @@ let menu currentPage =
 
 so that it look like this
 
-```fsharp
+``` 
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -195,7 +195,7 @@ let menu currentPage =
 This will add a link to your page inside the side menu. Watch out for the closing ]] and make sure you didn't duplicate them or put them at the wrong spot. The function menuItem is part of the template and it creates a link with the text "New Page" and it link to Page of type NewPage. 
 The currentPage is so that the link would looks different when you are already looking at that page. I included the menuItem function code below so you can how it work
 
-```fsharp
+``` 
 let menuItem label page currentPage =
     li
       [ ]
@@ -207,7 +207,7 @@ let menuItem label page currentPage =
 
 Still inside App.fs, edit your root function from
 
-```fsharp
+``` 
 let root model dispatch =
 
   let pageHtml =
@@ -219,7 +219,7 @@ let root model dispatch =
 
 to
 
-```fsharp
+``` 
 let root model dispatch =
 
   let pageHtml =
@@ -234,7 +234,7 @@ Looking at the changes closely, I add a pattern rule for the NewPage union case 
 This code is checking the Page that it is getting and depending on the kind of Page, it calls a root function from different module. 
 Now remember earlier, the top line of your NewInfo/View.fs was changed to
 
-```fsharp
+``` 
 module NewInfo.View
 ```
 
@@ -243,7 +243,7 @@ To copy the other code, you call your root function with the module name to get 
 
 Finally open up src/State.fs and modify
 
-```fsharp
+``` 
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -254,7 +254,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 to
 
-```fsharp
+``` 
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -269,3 +269,5 @@ Now open your console with the directory at the root of your project folder. Run
 ```
 dotnet fable npm-run start
 ```
+
+The final code can be found [here](https://github.com/vtquan/Adding-Static-Page-to-Fable-Elmish).
