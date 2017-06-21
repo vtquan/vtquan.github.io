@@ -10,6 +10,8 @@ comments: true
 share: true
 ---
 
+[Fable Elmish](https://github.com/fable-elmish/elmish) is an F# implementation of the [Elm Architecture](https://guide.elm-lang.org/architecture/) via [Fable](http://fable.io/), a F# compiler that compile to JavaScript.  [React](https://facebook.github.io/react/) binding through Fable is used to programmatically create html.
+
 ### Getting the Tools
 
 - [__.NET Core SDK__][microsoft-sdk-core]
