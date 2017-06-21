@@ -12,7 +12,8 @@ share: true
 ### Creating a new page
 
 A variation on the [previous post]({% post_url 2017-05-30-adding-a-new-page-pt1 %}). This time, we'll be adding a dynamic page.
-Run the following command from your terminal or console to create a new project. 
+
+Run the following commands from your terminal or console to create a new project. 
 
 ```
 dotnet new fable-elmish-react -n NewComplexPageElmish
@@ -104,7 +105,7 @@ let root model dispatch =
 
 This changes the page to display "Our New Counter value: " instead of "Counter value: " in the original Counter page.
 
-### Adding 
+### Adding the new Page, Model, and Message
 
 Same as the previous blog post, we need to change the Page discriminated union to include our new page. Then we modify the toHash function to give an url for the new page. Open up "src/Global.fs" and modify the following
 
@@ -276,7 +277,11 @@ let toHash page =
 
 Since we use "#**newcounter**" here, we use "**newcounter**" inside the pageParser function.
 
-While still in "src/State.fs" edit
+### Creating the Application's Models and Commands
+
+Elmish keep track of all the models and commands in the application. Command is a container for messages. A possible command is ``Cmd<NewCounterMsg(Increment)>``. You can find out how Elmish use rely on commands [here](https://github.com/fable-elmish/elmish/blob/master/src/cmd.fs).
+
+The models are kept as a single record with a unique field for each possible model. Commands are kept as a sequence with all commands to be run. Let's modify the application to keep track of our new model and commands. While still in "src/State.fs" edit
 
 ``` 
 let init result =
@@ -311,26 +316,28 @@ let init result =
                      Cmd.map NewCounterMsg newCounterCmd ]
 ```
 
-There are three changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounter`` and ``newCounterCmd``. 
+Now the application will create a new record and list of the models and commands on startup. The models are set to the result of the init function for the respective page.
+
+Looking deeper at the changes. There are three changes here. First is ``let (newCounterModel, newCounterCmd) = NewCounter.State.init()`` which call ``NewCounter.State.init()`` and store the result inside the values, ``newCounterModel`` and ``newCounterCmd``.
 
 To understand ``newCounter = newCounterModel`` part, look at the surrounding code
 
 ``` 
-let (model, cmd) =
-    urlUpdate result
-      { currentPage = Home
-        counter = counter
-        home = home 
-        newCounter = newCounterModel }
+{ currentPage = Home
+  counter = counter
+  home = home 
+  newCounter = newCounterModel }
 ```
 
-The record on a new line might be confusing but it is just a parameter for the ``urlUpdate`` function along with result. The result of the function is put into the values ``model`` and ``cmd``.
+It is creating a record of all the possible models. It uses the ``newCounterModel`` as the initial state for the newCounter field in the record.
 
-The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` is to add the new Message and Command that we got to the list of commands for Elmish to keeps track of.
+The last code portion, ``Cmd.map NewCounterMsg newCounterCmd`` create a Command out of your message and command and is added to the sequence of commands for the application.
 
-### Handling Messages and Models
+>Confusing? Another way to look at this is to pay attention to the type. NewCounterMsg is a message that can be ``Increment``, ``Decrement``, or ``Reset`` and newCounterCmd is ``Cmd<NewCounter.Types.Msg>``. If ``NewCounterMsg`` is ``Increment``,  then ``Cmd.map`` return a ``Cmd<Increment>``.
 
-Finally, time to tell the application how to handle your Message. While still in "src/State.fs", change the following
+### Update the Application's Models and Commands
+
+Finally, the application need to keep the record of models and the list of commands updated. While still in "src/State.fs", change the following
 
 ``` 
 let update msg model =
@@ -361,9 +368,11 @@ let update msg model =
 
 Going through line by line, ``| NewCounterMsg msg ->`` add a new union case to our pattern match. Basicly telling the function if it get a ``NewCounterMsg msg`` run the following code. 
 
-The next line, ``let (newCounterModel, newCounterCmd) = NewCounter.State.update msg model.newCounter``, create two values ``newCounterModel`` and ``newCounterCmd`` from the result of the function.
+The next line, ``let (newCounterModel, newCounterCmd) = NewCounter.State.update msg model.newCounter``, create two values ``newCounterModel`` and ``newCounterCmd`` from the result of the function. This is our updated model and commands.
 
-Finally, ``{ model with newCounter = newCounterModel }, Cmd.map NewCounterMsg newCounterCmd`` create a record and call a function on your new values. The record and the result of the function is returned to be handled by Elmish.
+Finally, ``{ model with newCounter = newCounterModel }, Cmd.map NewCounterMsg newCounterCmd`` is a tuple containing a clone of model record with the new ``newCounter`` and a new command. This is returned as the updated model and command for the application.
+
+### Running your Program
 
 Now run ``dotnet fable npm-run start`` and go to [http://localhost:8080/](http://localhost:8080/) and click on the link on the side to see your new page.
 
