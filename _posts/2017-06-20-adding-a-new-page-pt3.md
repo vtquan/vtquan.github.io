@@ -176,7 +176,7 @@ let update msg model : Model * Cmd<Msg> =
   | Scissor, Rock
     -> { model with Lost = model.Lost + 1; Result = "You lose!" }, [] // You lose
   | _ 
-    -> { model with Result = "You draw!" }, [] // You lose
+    -> { model with Result = "Draw!" }, [] // You draw
 ```
 
 Looking at the functions, the ``init`` function creates the initial model and list of messages for the page. Since the model is the amount of time the user win or lost the game, the value is 0 for both at the beginning. There is also no result since the game haven't started yet so ``Result`` is just an empty string. There's no need to send any message at this time so an empty list is created.
