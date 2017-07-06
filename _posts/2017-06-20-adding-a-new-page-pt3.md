@@ -2,7 +2,7 @@
 layout: single
 title: Adding a new page to Fable Elmish, Part 3
 excerpt: Adding a rock, paper, scissor game to your project
-date: 2017-06-20
+date: 2017-06-21
 categories: [FSharp]
 tags: [Fable, Elmish]
 comments: true
