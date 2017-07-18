@@ -39,7 +39,7 @@ type Message =
     }
 ```
 
-This is the list of API that I want to create
+There are multiple ideas on how to set up a set of API. For this project, these are the list of API that I want to create
 
 >GET http://localhost:5000/message/%i
 >
@@ -200,7 +200,7 @@ let webApp =
         setStatusCode 404 >=> text "Not Found" ]
 ```
 
-For this project I decide to go with the following.
+. For this project I decide to go with the following.
 
 ```
 let webApp = 
@@ -230,7 +230,7 @@ let webApp =
         setStatusCode 404 >=> text "Not Found" ]
 ```
 
-I have the subroute set so that I don't have to specify "message" for the following routes. I also use routef for when I want to retrieve something from the url. In this code, I want to retrieve an integer that stand for an id. Another way to get the same result is
+I have the subroute set so that I don't have to specify "message" for the following routes. Some functions required an Id so I used ``routef`` to retrieves a value from the URL. Note that the syntax for route and routef is different. One way of writing the same code would be
 
 ```
 let webApp = 
@@ -257,7 +257,4 @@ let webApp =
 
 ### Running the project
 
-Now run the following command to view your new site. By default, the site is at [http://localhost:5000/](http://localhost:5000/).
-
-```
-dotnet run
+Now run ``dotnet run`` to run your project. You can use [Postman](https://www.getpostman.com/) or similar tools to test your APIs. 
