@@ -2,7 +2,6 @@
 layout: single
 title: Getting Started with Giraffe
 date: 2017-07-06
-modified: 2017-07-06
 categories: [FSharp]
 tags: [Giraffe]
 comments: true
