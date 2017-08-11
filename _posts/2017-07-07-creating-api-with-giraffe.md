@@ -8,7 +8,7 @@ comments: true
 share: true
 ---
 
-One of the big news of ASP.NET Core is that it is merging ASP.NET Web API and ASP.NET MVC together. Since Giraffe depends on ASP.NET Core, Giraffe also have the power to easily mixes between API and MVC controllers. For this blog post, I want to look at how to create a basic set of API.
+Nearly any platforms these days have HTTP services. This means that with one set of APIs, you can share it between all your different platforms like web sites and mobile apps. Let's take a look at how you can create some API with Giraffe.
 
 ### Creating the project
 
