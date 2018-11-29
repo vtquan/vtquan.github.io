@@ -12,10 +12,10 @@ Nearly any platforms these days have HTTP services. This means that with one set
 
 ### Creating the project
 
-Let's make a new project called, GiraffeApi. 
+Let's make a new project called, GiraffeApi.
 If the prerequisites haven't been installed already, then look at the [previous post]({% post_url 2017-05-30-adding-a-new-page-pt1 %}). Otherwise run the following commands in the console
 
-``` bash
+```bash
 mkdir GiraffeApi
 cd GiraffeApi
 dotnet new giraffe
@@ -24,11 +24,11 @@ dotnet restore
 
 ### Design
 
-Since the basic Giraffe temple already have a Message model. I want to make a set of API that can get, insert, update, and delete a list of Messages. One change that I want to made is modifying the Message model to have an Id that I can search against. 
+Since the basic Giraffe temple already have a Message model. I want to make a set of API that can get, insert, update, and delete a list of Messages. One change that I want to made is modifying the Message model to have an Id that I can search against.
 
 Change the code inside Models/Message.fs to
 
-```
+```fsharp
 namespace GiraffeApi.Models
 
 [<CLIMutable>]
@@ -41,15 +41,15 @@ type Message =
 
 There are multiple ideas on how to set up a set of API. For this project, these are the list of API that I want to create
 
->GET http://localhost:5000/message/%i
+>GET [http://localhost:5000/message/%i](http://localhost:5000/message/%i)
 >
->CREATE http://localhost:5000/message/
+>CREATE [http://localhost:5000/message/](http://localhost:5000/message/)
 >
->UPDATE http://localhost:5000/message/%i
+>UPDATE [http://localhost:5000/message/%i](http://localhost:5000/message/%i)
 >
->DELETE http://localhost:5000/message/%i
+>DELETE [http://localhost:5000/message/%i](http://localhost:5000/message/%i)
 >
-*%i is a stand in for the id of the message of interest*
+>*%i is a stand in for the id of the message of interest*
 
 ### Creating the Controller
 
@@ -57,7 +57,7 @@ I want to have a seperate file that contains all the functions for the API. In A
 
 Inside the file, add the following cod
 
-```
+```fsharp
 module GiraffeApi.Controllers
 
 open Microsoft.AspNetCore.Http
@@ -70,8 +70,8 @@ This set the module of the file and the prerequisite classes and libraries that 
 
 Now, let's create the data for the api to uses
 
-```
-let mutable Messages = 
+```fsharp
+let mutable Messages =
     [
         { Id = 1; Text = "First Message" };
         { Id = 2; Text = "Second Message" };
@@ -86,21 +86,21 @@ Normally, data is retrieved from the database so data would be created in the da
 
 The GET api have two functionalities. One is simply returning a list of all messages. The other is returning a specific message with a specific Id.
 
-```
+```fsharp
 let getMessages ctx =
     negotiate Messages ctx
 
 let findMessage id =
     let result = List.tryFind (fun message -> message.Id = id) Messages
     match result with
-    | Some(message) -> negotiate message 
+    | Some(message) -> negotiate message
     | None -> setStatusCode 404 >=> text "Message not found"
 ```
 
 The ``getMessages`` function will return a list of all messages. The ctx parameter comes from the function handling the routing which you will see later. The ``negotiate`` function will takes the Messages list that was created earlier and return it to the user as a JSON, XML, or plain text depending on the user preference. To be specific with the return type, use ``json``, ``xml``, or ``text``. For example, ``json Messages ctx``.
 
 >One thing you need to watch out for is using a parameter-less function in your routing. For example, if I write my ``getMessages`` function like this
->```
+>```fsharp
 >let getMessages () =
 >    negotiate Messages
 >```
@@ -112,8 +112,8 @@ The ``findMessage`` function is mainly basic list searching. The important part 
 
 For POST, we'll have only one function which will add a new message
 
-```
-let submitMessage () 
+```fsharp
+let submitMessage ()
     fun (ctx : HttpContext) ->
         async {
             let! message = ctx.BindModel<Message>()
@@ -126,7 +126,7 @@ let submitMessage ()
 
 ``ctx.BindModel`` would read the body of the POST request and convert it to an object. ``BindModel`` can read JSON, XML, or form urlencoded payload, or query string. For only accepting a specific type, ``BindJson``, ``BindXml``, ``BindForm``, or ``BindQueryString`` can be used instead. ``ctx.BindModel`` return an async object so it is wrapped in an async statement. The ``fun (ctx : HttpContext) ->`` indicates a nested function. The route code, that you will see later, will pass a HttpContext to your function. You can rewritten this to not use nested function as followed
 
-```
+```fsharp
 let submitMessage (ctx:HttpContext) =
     async {
         let! message = ctx.BindModel<Message>()
@@ -143,7 +143,7 @@ let submitMessage (ctx:HttpContext) =
 
 Let's add the ability to update a message
 
-```
+```fsharp
 let putMessage id =
     fun (ctx : HttpContext) ->
         async {
@@ -168,12 +168,11 @@ let putMessage id =
 
 Nothing special is going on here. Similar with the create function with getting a message via ``ctx.BindModel`` and standard F# code to edit the Message list.
 
-
 #### DELETE
 
 Finally, to delete a message via Id
 
-```
+```fsharp
 let deleteMessage id =
     printfn "%A" Messages
     match List.exists (fun message -> message.Id = id) Messages with
@@ -190,8 +189,8 @@ let deleteMessage id =
 
 Upon creating a new project, Giraffe defines its routes inside the webApp function in Program.fs. By default, it looks like this
 
-```
-let webApp = 
+```fsharp
+let webApp =
     choose [
         GET >=>
             choose [
@@ -200,10 +199,10 @@ let webApp =
         setStatusCode 404 >=> text "Not Found" ]
 ```
 
-. For this project I decide to go with the following.
+For this project I decide to go with the following.
 
-```
-let webApp = 
+```fsharp
+let webApp =
     choose [
         subRoute "/message" (
             choose [
@@ -232,13 +231,13 @@ let webApp =
 
 I have the subroute set so that I don't have to specify "message" for the following routes. Some functions required an Id so I used ``routef`` to retrieves a value from the URL. Note that the syntax for route and routef is different. One way of writing the same code would be
 
-```
-let webApp = 
+```fsharp
+let webApp =
     choose [
         GET >=>
             choose [
-                route "/messages/" >=> getMessages 
-                routef "/messages/%i" findMessage 
+                route "/messages/" >=> getMessages
+                routef "/messages/%i" findMessage
             ]
         POST >=>
             choose [
@@ -246,7 +245,7 @@ let webApp =
             ]
         PUT >=>
             choose [
-                routef "/messages/%i" putMessage 
+                routef "/messages/%i" putMessage
             ]
         DELETE >=>
             choose [
@@ -257,4 +256,4 @@ let webApp =
 
 ### Running the project
 
-Now run ``dotnet run`` to run your project. You can use [Postman](https://www.getpostman.com/) or similar tools to test your APIs. 
+Now run ``dotnet run`` to run your project. You can use [Postman](https://www.getpostman.com/) or similar tools to test your APIs.

@@ -22,15 +22,15 @@ It is an interesting syntax but more importantly, how do you convert this to F# 
 
 In F#, it looks like this
 
-```
+```fsharp
 services.AddAuthorization(fun options ->
     options.AddPolicy(
-        "Administrators", 
-        ( fun policy -> policy.RequireClaim(ClaimTypes.Role, "Administrator") |> ignore ) 
+        "Administrators",
+        ( fun policy -> policy.RequireClaim(ClaimTypes.Role, "Administrator") |> ignore )
     ) |> ignore
     options.AddPolicy(
-        "Moderators", 
-        ( fun policy -> policy.RequireClaim(ClaimTypes.Role, "Administrator", "Moderator") |> ignore ) 
+        "Moderators",
+        ( fun policy -> policy.RequireClaim(ClaimTypes.Role, "Administrator", "Moderator") |> ignore )
     ) |> ignore
 ) |> ignore
 ```

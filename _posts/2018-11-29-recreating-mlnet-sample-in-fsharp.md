@@ -82,9 +82,9 @@ let main argv =
     let trainingDataView = reader.Read(MultiFileSource(dataPath))
 
     // Helper functions to help with creating the pipeline
-    let append (estimator : IEstimator<'a>) (pipeline : IEstimator<'b>)  = 
+    let append (estimator : IEstimator<'a>) (pipeline : IEstimator<'b>)  =
         match pipeline with
-        | :? IEstimator<ITransformer> as p -> 
+        | :? IEstimator<ITransformer> as p ->
             p.Append estimator
         | _ -> failwith "The pipeline has to be an instance of IEstimator<ITransformer>."
 

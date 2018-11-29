@@ -11,12 +11,12 @@ share: true
 
 ### Creating a new page
 
-Start with the new project you created from the [previous post]({% post_url 2017-05-25-getting-started-with-fable-elmish %}). This example will reuse the existing page so that we can focus on just adding the page to the project. 
+Start with the new project you created from the [previous post]({% post_url 2017-05-25-getting-started-with-fable-elmish %}). This example will reuse the existing page so that we can focus on just adding the page to the project.
 First, navigate to the src folder and create a new folder named NewInfo. Then go into the Info folder and copy View.fs and paste it inside the NewInfo folder. Your folder structure should look like this
 
 ![Proper folder structure]({{ site.url }}/assets/images/adding-a-new-page-to-fable-elmish-part-one/folder-structure.png)
 
-For the page to compiles properly, you need to add the page to your project. Open up the .fsproj in the root folder of your project and add the following code inside the <ItemGroup></ItemGroup> tag.
+For the page to compiles properly, you need to add the page to your project. Open up the .fsproj in the root folder of your project and add the following code inside the `<ItemGroup></ItemGroup>` tag.
 
 ```xml
 <Compile Include="src/NewInfo/View.fs" />
@@ -75,24 +75,24 @@ and before
 <Compile Include="src/App.fs" />
 ```
 
-Also, if your new page require code from another file, you need to add the file first and then your page. 
+Also, if your new page require code from another file, you need to add the file first and then your page.
 You might noticed that I include <!-- NewInfo --> in the code above. This is a comment and it is optional for you to add it in your code.
 
 Now open the NewInfo/View.fs file and at the first line where it said 
 
-``` 
+```fsharp
 module Info.View
 ```
 
 and replace it with
 
-``` 
+```fsharp
 module NewInfo.View
 ```
 
 This change the domain of your file from Info.View to NewInfo.View. Then modify the page so that you can tell the difference from the info page. Change the following code
 
-``` 
+```fsharp
 let root =
   div
     [ ClassName "content" ]
@@ -106,7 +106,7 @@ let root =
 
 to
 
-``` 
+```fsharp
 let root =
   div
     [ ClassName "content" ]
@@ -122,10 +122,10 @@ The root function return the html that will be shown when the page is loaded. Wh
 
 ### Setting up the Handlers
 
-You will now setup a link to your new page and create the code that serves it. 
+You will now setup a link to your new page and create the code that serves it.
 First open up src/Global.fs and edit
 
-``` 
+```fsharp
 type Page =
   | Home
   | Counter
@@ -140,7 +140,7 @@ let toHash page =
 
 to this
 
-``` 
+```fsharp
 type Page =
   | Home
   | Counter
@@ -155,13 +155,14 @@ let toHash page =
   | NewPage -> "#newpage"
 ```
 
-Be aware that I made two changes. I add a NewPage union case to Page. That mean that Page could be either Home, Counter, About, or NewPage. I call it NewPage to point out that you do not need to name it the same as your page folder which is called NewInfo. 
-Then I add a new pattern rule in the toHash function for the new union case. The "#newpage" represent what get added to the url when you open the page. 
+Be aware that I made two changes. I add a NewPage union case to Page. That mean that Page could be either Home, Counter, About, or NewPage. I call it NewPage to point out that you do not need to name it the same as your page folder which is called NewInfo.
+
+Then I add a new pattern rule in the toHash function for the new union case. The "#newpage" represent what get added to the url when you open the page.
 For example, clicking on the Home link will change the url to [http://localhost:8080/#home](http://localhost:8080/#home). In summary, you add a new type of Page called NewPage and that the url for it is "#newpage"
 
-Now to add your link to the side menu. First open up src/App.fs and edit 
+Now to add your link to the side menu. First open up src/App.fs and edit
 
-``` 
+```fsharp
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -177,7 +178,7 @@ let menu currentPage =
 
 so that it look like this
 
-``` 
+```fsharp
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -188,14 +189,15 @@ let menu currentPage =
         [ ClassName "menu-list" ]
         [ menuItem "Home" Home currentPage
           menuItem "Counter sample" Counter currentPage
-          menuItem "About" Page.About currentPage 
+          menuItem "About" Page.About currentPage
           menuItem "New Page" Page.NewPage currentPage ] ]
 ```
 
-This will add a link to your page inside the side menu. Watch out for the closing ]] and make sure you didn't duplicate them or put them at the wrong spot. The function menuItem is part of the template and it creates a link with the text "New Page" and it link to Page of type NewPage. 
-The currentPage is so that the link would looks different when you are already looking at that page. I included the menuItem function code below so you can how it work
+This will add a link to your page inside the side menu. Watch out for the closing ]] and make sure you didn't duplicate them or put them at the wrong spot. The function menuItem is part of the template and it creates a link with the text "New Page" and it link to Page of type NewPage.
 
-``` 
+The `currentPage` is so that the link would looks different when you are already looking at that page. I included the menuItem function code below so you can how it work
+
+```fsharp
 let menuItem label page currentPage =
     li
       [ ]
@@ -203,11 +205,11 @@ let menuItem label page currentPage =
           [ classList [ "is-active", page = currentPage ]
             Href (toHash page) ]
           [ str label ] ]
-``` 
+```
 
 Still inside App.fs, edit your root function from
 
-``` 
+```fsharp
 let root model dispatch =
 
   let pageHtml =
@@ -219,22 +221,22 @@ let root model dispatch =
 
 to
 
-``` 
+```fsharp
 let root model dispatch =
 
-  let pageHtml =
-	function
-	| Page.About -> Info.View.root
-	| Counter -> Counter.View.root model.counter (CounterMsg >> dispatch)
-	| Home -> Home.View.root model.home (HomeMsg >> dispatch)
-	| NewPage -> NewInfo.View.root
+    let pageHtml =
+        function
+          | Page.About -> Info.View.root
+          | Counter -> Counter.View.root model.counter (CounterMsg >> dispatch)
+          | Home -> Home.View.root model.home (HomeMsg >> dispatch)
+          | NewPage -> NewInfo.View.root
 ```
 
-Looking at the changes closely, I add a pattern rule for the NewPage union case I created. 
-This code is checking the Page that it is getting and depending on the kind of Page, it calls a root function from different module. 
+Looking at the changes closely, I add a pattern rule for the NewPage union case I created.
+This code is checking the Page that it is getting and depending on the kind of Page, it calls a root function from different module.
 Now remember earlier, the top line of your NewInfo/View.fs was changed to
 
-``` 
+```fsharp
 module NewInfo.View
 ```
 
@@ -243,7 +245,7 @@ To copy the other code, you call your root function with the module name to get 
 
 Finally open up src/State.fs and modify
 
-``` 
+```fsharp
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -254,7 +256,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 to
 
-``` 
+```fsharp
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -266,7 +268,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 Now open your console with the directory at the root of your project folder. Run the following command and navigate to [http://localhost:8080/](http://localhost:8080/) and click on the link on the side to see your new page.
 
-```
+```bash
 dotnet fable npm-run start
 ```
 

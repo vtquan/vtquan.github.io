@@ -21,25 +21,25 @@ share: true
 
 To begin, you need to download the template. Run this command in your console to download the template. If you already have the template, running this command will update the template.
 
-```
+```bash
 dotnet new -i "Fable.Template.Elmish.React::*"
 ```
 
 Now change your console directory to the directory that you want to create your new project in. Then run
 
-```
+```bash
 dotnet new fable-elmish-react -n yourprojectname
 ```
 
 You should have created a new folder containing your project. With your project created, update the directory of your console to the directory of your new folder with
 
-```
+```bash
 cd yourprojectname
 ```
 
 Now you need to download your packages and libraries to run the project by running
 
-```
+```bash
 yarn
 dotnet restore
 ```
@@ -51,13 +51,13 @@ The commands take a long time to finish so be patient. It is finished if you are
 
 Now run the following command to run your new project. You can view your site by going to [http://localhost:8080/](http://localhost:8080/)
 
-```
+```bash
 dotnet fable npm-run start
 ```
 
 If you want to build the project instead, run this command
 
-```
+```bash
 dotnet fable npm-run build
 ```
 

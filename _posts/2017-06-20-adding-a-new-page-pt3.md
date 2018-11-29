@@ -17,7 +17,7 @@ Now that you know how to add both static and dynamic pages to your project, let'
 
 Run the following commands to create a new project called RockPaperScissorElmish
 
-```
+```bash
 dotnet new fable-elmish-react -n RockPaperScissorElmish
 cd RockPaperScissorElmish
 yarn
@@ -77,7 +77,7 @@ Now our project can compiles our files.
 
 First open up "src/RPS/Types.fs" and edit the content to look like the following
 
-``` 
+```fsharp
 module RPS.Types
 
 type Model = { Win : int; Lost : int; Result: string }
@@ -90,9 +90,9 @@ type Msg =
 
 The first line is giving the name of the module for our file. Our new types, Model and Msg, are both inside the module ``RPS.Types``. The model is the data that the page have access to. For our page, we want to show the number of time the user win or lose. For that, we declare our Model to be a record with an int field for ``Win`` and ``Lost``. We also want to display a message saying the result so we have a string record field called ``Result``. ``Msg`` is the message that the user will sent. For the game, the user only need to send a Rock, Paper, or Scissor message.
 
-To design our page, edit "src/RPS/View.fs" to 
+To design our page, edit "src/RPS/View.fs" to
 
-```
+```fsharp
 module RPS.View
 
 open Fable.Helpers.React
@@ -128,7 +128,7 @@ let root model dispatch =
         [ str (sprintf "Game Stats: %i Wins, %i Lost" model.Win model.Lost) ] ]
 ```
 
-First thing first, we need to name our module. For this file, the module is ``RPS.View``. 
+First thing first, we need to name our module. For this file, the module is ``RPS.View``.
 
 The open statements let us access functions and types that we need. The two ``Fabel.Helpers`` statements let us create html from functions. The ``Types`` statement refer to the ``RPS.Types`` module we created earlier. We didn't said ``open RPS.Types`` because we declare the module to be ``RPS.View`` earlier so it knows to look for ``RPS.Types``.
 
@@ -142,11 +142,11 @@ The ``simpleButton`` function creates a button in html. The button's text is giv
 
 The root function is will print the content of our page. It uses the earlier simpleButton function to create 3 buttons sending a Rock, Paper, or Scissor Message. After that, it uses the model to display the result and stats for wins and losses.
 
->Note that F# files is compiled from top to bottom. The simpleButton must be defined before the root function can use it. 
+>Note that F# files is compiled from top to bottom. The simpleButton must be defined before the root function can use it.
 
 We can finally add functionality to our page. Edit "src/RPS/State.fs" to
 
-``` 
+```fsharp
 module RPS.State
 
 open Elmish
@@ -167,7 +167,7 @@ let update msg model : Model * Cmd<Msg> =
   let cpuChoice = rnd.Next(1, 4) |> convertIntToChoice
 
   match msg, cpuChoice with
-  | Rock, Scissor 
+  | Rock, Scissor
   | Paper, Rock
   | Scissor, Paper
     -> { model with Win = model.Win + 1; Result = "You win!" }, [] // You win
@@ -175,7 +175,7 @@ let update msg model : Model * Cmd<Msg> =
   | Paper, Scissor
   | Scissor, Rock
     -> { model with Lost = model.Lost + 1; Result = "You lose!" }, [] // You lose
-  | _ 
+  | _
     -> { model with Result = "Draw!" }, [] // You draw
 ```
 
@@ -187,7 +187,7 @@ The ``update`` function it where all the processing is done. It creates a random
 
 As before, we add a new Page type to represent our page. Open "src/Global.fs" and modify the following
 
-``` 
+```fsharp
 type Page =
   | Home
   | Counter
@@ -202,7 +202,7 @@ let toHash page =
 
 to this
 
-``` 
+```fsharp
 module Global
 
 type Page =
@@ -222,7 +222,7 @@ let toHash page =
 
 Now to add our new message and model. Modify "src/Types.fs" from
 
-``` 
+```fsharp
 type Msg =
   | CounterMsg of Counter.Types.Msg
   | HomeMsg of Home.Types.Msg
@@ -236,7 +236,7 @@ type Model = {
 
 to
 
-``` 
+```fsharp
 type Msg =
   | CounterMsg of Counter.Types.Msg
   | HomeMsg of Home.Types.Msg
@@ -256,7 +256,7 @@ I choose to name the message and model ``GameMsg`` and ``game`` respectively but
 
 Let's add the link to the new page. Edit "src/App.fs" from
 
-``` 
+```fsharp
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -272,7 +272,7 @@ let menu currentPage =
 
 so that it look like this
 
-``` 
+```fsharp
 let menu currentPage =
   aside
     [ ClassName "menu" ]
@@ -291,7 +291,7 @@ let menu currentPage =
 
 Let's get our link working. First, edit the root function in "src/App.fs" so that
 
-``` 
+```fsharp
 let root model dispatch =
 
   let pageHtml =
@@ -303,7 +303,7 @@ let root model dispatch =
 
 looks like
 
-``` 
+```fsharp
 let root model dispatch =
 
   let pageHtml =
@@ -316,7 +316,7 @@ let root model dispatch =
 
 Edit "src/State.fs" from
 
-``` 
+```fsharp
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -327,7 +327,7 @@ let pageParser: Parser<Page->Page,Page> =
 
 to
 
-``` 
+```fsharp
 let pageParser: Parser<Page->Page,Page> =
   oneOf [
     map About (s "about")
@@ -343,7 +343,7 @@ Now the application can load the right page. I want to remind you that "rpsgame"
 
 While still in "src/State.fs" edit
 
-``` 
+```fsharp
 let init result =
   let (counter, counterCmd) = Counter.State.init()
   let (home, homeCmd) = Home.State.init()
@@ -359,7 +359,7 @@ let init result =
 
 to
 
-``` 
+```fsharp
 let init result =
   let (counter, counterCmd) = Counter.State.init()
   let (home, homeCmd) = Home.State.init()
@@ -368,7 +368,7 @@ let init result =
     urlUpdate result
       { currentPage = Home
         counter = counter
-        game = game        
+        game = game
         home = home }
   model, Cmd.batch [ cmd
                      Cmd.map CounterMsg counterCmd
@@ -382,7 +382,7 @@ We are using the init function in the ``RPS.State`` module to get our intitial m
 
 Finally, while still in "src/State.fs", change the following
 
-``` 
+```fsharp
 let update msg model =
   match msg with
   | CounterMsg msg ->
@@ -395,7 +395,7 @@ let update msg model =
 
 to
 
-``` 
+```fsharp
 let update msg model =
   match msg with
   | CounterMsg msg ->

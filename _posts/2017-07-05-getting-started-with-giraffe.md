@@ -18,7 +18,7 @@ You will need to make sure that the [.NET Core SDK][microsoft-sdk-core] is insta
 
 The easier way to get started is by creating a basic project using a template. You can download the template by running the following in your console
 
-```
+```bash
 dotnet new -i giraffe-template::*
 ```
 
@@ -28,13 +28,13 @@ If this is the first time, you run the dotnet commands, it will do basic setup f
 
 After downloading the template, navigate to the directory you want your project to be in and run the following
 
-```
+```bash
 dotnet new giraffe -n yourProjectName
 ```
 
 Then download the required packages and libraries with
 
-```
+```bash
 dotnet restore
 ```
 
@@ -42,6 +42,6 @@ dotnet restore
 
 Now run the following command to view your new site. By default, the site is at [http://localhost:5000/](http://localhost:5000/).
 
-```
+```bash
 dotnet run
 ```
