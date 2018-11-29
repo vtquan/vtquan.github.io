@@ -16,7 +16,7 @@ Each of the tutorials in the second link have the F# equivalent on [GitHub](http
 
 To begin, call the following commmands to create your project.
 
-```cmd
+```bash
 dotnet new console -lang F# -o myApp
 cd myApp
 ```
