@@ -3,6 +3,7 @@ layout: single
 title: Adding a new page to Fable Elmish, Part 1
 excerpt: Adding a static page to your template
 date: 2017-05-30
+modified: 2019-03-03
 categories: [FSharp]
 tags: [Fable, Elmish]
 comments: true
@@ -25,37 +26,33 @@ For the page to compiles properly, you need to add the page to your project. Ope
 This is important. The .fsproj file shows the compile order of every files in the project. This means that the compiler compiles the first file you see first and then second. You can see the full content of my .fsproj file below
 
 ```xml
-<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <!-- Global to the app -->
-    <Compile Include="src/Global.fs" />
+    <Compile Include="Global.fs" />
     <!-- Info -->
-    <Compile Include="src/Info/View.fs" />
-    <!-- NewInfo -->
-    <Compile Include="src/NewInfo/View.fs" />
+    <Compile Include="Info/View.fs" />
+    <!-- New Info -->
+    <Compile Include="NewInfo/View.fs" />
     <!-- Counter -->
-    <Compile Include="src/Counter/Types.fs" />
-    <Compile Include="src/Counter/State.fs" />
-    <Compile Include="src/Counter/View.fs" />
+    <Compile Include="Counter/Types.fs" />
+    <Compile Include="Counter/State.fs" />
+    <Compile Include="Counter/View.fs" />
     <!-- Home -->
-    <Compile Include="src/Home/Types.fs" />
-    <Compile Include="src/Home/State.fs" />
-    <Compile Include="src/Home/View.fs" />
+    <Compile Include="Home/Types.fs" />
+    <Compile Include="Home/State.fs" />
+    <Compile Include="Home/View.fs" />
     <!-- Navbar -->
-    <Compile Include="src/Navbar/View.fs" />
+    <Compile Include="Navbar/View.fs" />
     <!-- App -->
-    <Compile Include="src/Types.fs" />
-    <Compile Include="src/State.fs" />
-    <Compile Include="src/App.fs" />
+    <Compile Include="Types.fs" />
+    <Compile Include="State.fs" />
+    <Compile Include="App.fs" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FSharp.NET.Sdk" Version="1.0.*" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-fable" Version="1.0.4" />
-  </ItemGroup>
-  <Import Project=".paket\Paket.Restore.targets" />
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
 ```
 
@@ -115,7 +112,7 @@ let root =
         [ str "New page" ]
       p
         [ ]
-        [ str "This template is a simple application build with Fable + Elmish + React." ] ]
+        [ str "You created a new page" ] 
 ```
 
 The root function return the html that will be shown when the page is loaded. What you just did is changing the header to display "New Page" instead of "About Page"
@@ -212,11 +209,12 @@ Still inside App.fs, edit your root function from
 ```fsharp
 let root model dispatch =
 
-  let pageHtml =
-    function
+  let pageHtml page =
+    match page with
     | Page.About -> Info.View.root
-    | Counter -> Counter.View.root model.counter (CounterMsg >> dispatch)
-    | Home -> Home.View.root model.home (HomeMsg >> dispatch)
+    | Counter -> Counter.View.root model.Counter (CounterMsg >> dispatch)
+    | Home -> Home.View.root model.Home (HomeMsg >> dispatch)
+
 ```
 
 to
@@ -224,12 +222,12 @@ to
 ```fsharp
 let root model dispatch =
 
-    let pageHtml =
-        function
-          | Page.About -> Info.View.root
-          | Counter -> Counter.View.root model.counter (CounterMsg >> dispatch)
-          | Home -> Home.View.root model.home (HomeMsg >> dispatch)
-          | NewPage -> NewInfo.View.root
+  let pageHtml page =
+    match page with
+    | Page.About -> Info.View.root
+    | Counter -> Counter.View.root model.Counter (CounterMsg >> dispatch)
+    | Home -> Home.View.root model.Home (HomeMsg >> dispatch)
+    | NewPage -> NewInfo.View.root
 ```
 
 Looking at the changes closely, I add a pattern rule for the NewPage union case I created.
@@ -247,29 +245,29 @@ Finally open up src/State.fs and modify
 
 ```fsharp
 let pageParser: Parser<Page->Page,Page> =
-  oneOf [
-    map About (s "about")
-    map Counter (s "counter")
-    map Home (s "home")
-  ]
+    oneOf [
+        map About (s "about")
+        map Counter (s "counter")
+        map Home (s "home")
+    ]
 ```
 
 to
 
 ```fsharp
 let pageParser: Parser<Page->Page,Page> =
-  oneOf [
-    map About (s "about")
-    map Counter (s "counter")
-    map Home (s "home")
-    map NewPage (s "newpage")
-  ]
+    oneOf [
+        map About (s "about")
+        map Counter (s "counter")
+        map Home (s "home")
+        map NewPage (s "newpage")
+    ]
 ```
 
-Now open your console with the directory at the root of your project folder. Run the following command and navigate to [http://localhost:8080/](http://localhost:8080/) and click on the link on the side to see your new page.
+Now open your console with the directory at the root of your project folder. Run the following command and navigate to [http://localhost:8080/](http://localhost:8080/) and click on the "New Page" link on the side to see your new page.
 
 ```bash
-dotnet fable npm-run start
+npx webpack-dev-server
 ```
 
 The final code can be found [here](https://github.com/vtquan/Adding-Static-Page-to-Fable-Elmish).
