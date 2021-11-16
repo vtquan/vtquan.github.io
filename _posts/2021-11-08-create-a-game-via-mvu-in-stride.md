@@ -20,7 +20,7 @@ Starting from the basic solution created by stride. I created a new F# class lib
 
 <figure class="video_container">
   <video controls="true" allowfullscreen="true">
-    <source src="{{ site.url }}/assets/images/mvu-stride/NewProject.webm" type="video/webm">
+    <source src="{{ site.url }}/assets/images/mvu-stride/newproject.webm" type="video/webm">
   </video>
 </figure>
 
@@ -401,7 +401,11 @@ namespace MyGame
 
 Then assign the script to the Sphere entity. Assign the keys in the editor and move the camera up to a higher position to view the area.
 
-![Setup]({{ site.url }}/assets/images/mvu-stride/Setup.webm)
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true">
+    <source src="{{ site.url }}/assets/images/mvu-stride/Setup.webm" type="video/webm">
+  </video>
+</figure>
 
 Finally, go to your platform project(MyGame.Windows in this case) and replace the following in MyGameApp.cs
 
@@ -420,5 +424,14 @@ using (var game = new MvuGame.Game.MvuGame())
     game.Run();
 }
 ```
+
+Run it either from Visual Studio or The Stride Editor for the following result
+
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true">
+    <source src="{{ site.url }}/assets/images/mvu-stride/result.webm" type="video/webm">
+  </video>
+</figure>
+
 
 The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/BasicMvu) but the original proof of concept [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) with smoother movement and a jump function.
