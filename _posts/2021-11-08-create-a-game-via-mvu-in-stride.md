@@ -10,7 +10,7 @@ share: true
 ---
 ### Background
 
-While there are many 3D game engine in the .NET ecosystem, nearly all are developed with C# in mind. If one wants to uses F# in these engine, the easiest and most common set up is to create a F# class library within the solution where logic can be written and called from the C# project. The [Stride Engine](https://www.stride3d.net) is no difference in this regard but I was looking into it due to being relatively lightweight for its functionalities and how well it integrate with Visual Studio. It was around this time that I noticed the F# game jam posting but I was not satified with having the basic F# class library. The gameflow is still dictated by the C# project and passing values back and forth between projects was creating more work for myself. That's when I saw the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into Stride Engine. Even though it is still through a class library, by creating a custom implementation of the base Game class, I have more control over the game loop. I wanted to do the same thing with [Garnet](https://github.com/bcarruthers/garnet). However, with the terminology being very different between Garnet and Svetol, along with the fact that I have no experience with ECS system, I did not get very far in its implementation and pivot to a MVU system instead since I am familiar with it. The plan was to use the elmish library but the I could not get the game engine update loop and elmish loop to work side by side so I rolled my own. The original proof of concept can be found [here]() but my implementation have changed through experiences during the game jam. The following is about the current implementation.
+While there are many 3D game engine in the .NET ecosystem, nearly all are developed with C# in mind. If one wants to uses F# in these engine, the easiest and most common set up is to create a F# class library within the solution where logic can be written and called from the C# project. The [Stride Engine](https://www.stride3d.net) is no difference in this regard but I was looking into it due to being relatively lightweight for its functionalities and how well it integrate with Visual Studio. However, I was not satified with having the basic F# class library. The gameflow is still dictated by the C# project and passing values back and forth between projects was creating more work for myself. That's when I saw the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into Stride Engine. Even though it is still through a class library, by creating a custom implementation of the base Game class, I have more control over the game loop. I wanted to do the same thing with [Garnet](https://github.com/bcarruthers/garnet). However, with the terminology being very different between Garnet and Svetol, along with the fact that I have no experience with ECS system, I did not get very far in its implementation. I then pivot to a MVU system which I am familiar with. The plan was to use the elmish library but I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed during the game jam. The following is about the current implementation.
 
 ### Model, View, Update
 
@@ -19,7 +19,7 @@ Starting from the basic solution created by stride. I created a new F# class lib
 ![Setup]({{ site.url }}/assets/images/mvu-stride/fsc-error.png)
 
 <figure class="video_container">
-  <video controls="true" allowfullscreen="true">
+  <video controls="true" allowfullscreen="true" style="width: 100%;">
     <source src="{{ site.url }}/assets/images/mvu-stride/newproject.webm" type="video/webm">
   </video>
 </figure>
@@ -38,7 +38,7 @@ type GameModel =
     }
 ```
 
-for the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. This is not the same MVU system as used in Fabulous and fable elmish where a new view is created entirely from the model and a powerful diff engine will find what have changed and only update those. Instead, I am directly updating what is necessary in the scene.
+For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. This is not the same MVU system as used in Fabulous and fable elmish where a new view is created entirely from the model and a powerful diff engine will find what have changed and only update those. Instead, I am directly updating what is necessary in the scene.
 
 ```fsharp
 let view model (gameTime : GameTime) =
@@ -73,7 +73,7 @@ let update msg model (deltaTime : float32) =
         { model with Velocity = Vector3.Zero }, []
 ```
 
-Copying from the elmish library, my update function return a new model along with a list of Messages. The list of message let me follow up a given message with multiple messages. And since most of the time I don't want to pass a message as a follow up, I can return an empty list without having to create a special Empty message. Truly, the separation between update and view is not neccessary but I like the separation.
+Copying from the elmish library, my update function return a new model along with a list of Messages. The list of message let me follow up a given message with multiple messages. And since most of the time I don't want to pass a message as a follow up, I can return an empty list without having to create a special Empty message.
 
 I also need to create an empty and init function. The empty function will be used to initialize a class member. Then I use the init function to set the proper value. 
 
@@ -402,7 +402,7 @@ namespace MyGame
 Then assign the script to the Sphere entity. Assign the keys in the editor and move the camera up to a higher position to view the area.
 
 <figure class="video_container">
-  <video controls="true" allowfullscreen="true">
+  <video controls="true" allowfullscreen="true" style="width: 100%;">
     <source src="{{ site.url }}/assets/images/mvu-stride/Setup.webm" type="video/webm">
   </video>
 </figure>
@@ -428,10 +428,10 @@ using (var game = new MvuGame.Game.MvuGame())
 Run it either from Visual Studio or The Stride Editor for the following result
 
 <figure class="video_container">
-  <video controls="true" allowfullscreen="true">
+  <video controls="true" allowfullscreen="true" style="width: 100%;">
     <source src="{{ site.url }}/assets/images/mvu-stride/result.webm" type="video/webm">
   </video>
 </figure>
 
 
-The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/BasicMvu) but the original proof of concept [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) with smoother movement and a jump function.
+The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/BasicMvu) and the original proof of concept [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) with smoother movement and a jump function.
