@@ -18,7 +18,11 @@ Starting from the basic solution created by stride. I created a new F# class lib
 
 ![Setup]({{ site.url }}/assets/images/mvu-stride/fsc-error.png)
 
-![Setup]({{ site.url }}/assets/images/mvu-stride/NewProject.webm)
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true">
+    <source src="{{ site.url }}/assets/images/mvu-stride/NewProject.webm" type="video/webm">
+  </video>
+</figure>
 
 This scene will have only a ball Entity so let's create a MVU system for moving the ball. For my model, I want to hold the velocity of the ball and ball Enitity.
 
