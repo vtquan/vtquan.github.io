@@ -1,6 +1,6 @@
 ---
 layout: single
-title: Create a game functionally with Stride
+title: Creating a game functionally with Stride
 excerpt: Create a game in MVU style using the Stride Engine
 date: 2021-11-08
 categories: [FSharp]
@@ -20,7 +20,7 @@ Starting from the basic solution created by stride. I created a new F# class lib
 
 <figure class="video_container">
   <video controls="true" allowfullscreen="true" style="width: 100%;">
-    <source src="{{ site.url }}/assets/images/mvu-stride/newproject.webm" type="video/webm">
+    <source src="{{ site.url }}/assets/images/mvu-stride/NewProject.webm" type="video/webm">
   </video>
 </figure>
 
