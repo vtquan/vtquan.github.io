@@ -9,11 +9,14 @@ tags: [Game Jam, Stride]
 comments: true
 share: true
 ---
+
 ### Background
 
 Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into Stride Engine. I wanted to create a custom implementation of the base Game class so that the game update loop would be better suited to a functional approach. I first attempted to use [Garnet](https://github.com/bcarruthers/garnet) but I don't have enough experience with ECS system to create an implementation. I then pivot to a MVU system which I am familiar with. The plan was to use the elmish library but I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed since then. The following is about the current implementation.
 
-Starting from the basic solution created by Stride. I created a new F# class library called `MyGame.Core`, renamed `Library.fs` to `Program.fs`, and included all the Stride nuget packages from the `MyGame` project. Save the solution and make sure go to the Stride editor and select File -> Reload Project. Otherwise, the Stride editor will remove your F# project from the solution whenever changes are made. Another issue is that the Stride editor will try to build with fsc.exe which no longer exist in newer sdk. You can build the F# project first through Visual Studio then run the project via the Editor or run the project entirely through Visual Studio.
+### New Project
+
+Starting from the basic solution created by Stride, add a new F# class library called `MyGame.Core`, I renamed `Library.fs` to `Program.fs`, and included all the Stride nuget packages from the `MyGame` project. Save the solution and make sure go to the Stride editor and select File -> Reload Project. Otherwise, the Stride editor will remove your F# project from the solution whenever changes are made. Another issue is that the Stride editor will try to build with fsc.exe and fail. You can build the F# project first through Visual Studio then run the project via the Editor or run the project entirely through Visual Studio.
 
 ![Setup]({{ site.url }}/assets/images/mvu-stride/fsc-error.png)
 
@@ -25,7 +28,7 @@ Starting from the basic solution created by Stride. I created a new F# class lib
 
 ### Events
 
-For the MVU system to work, I need some way to create and receive messages while the game is running. For this, I use the built in Event system in Stride. So inside the `MyGame` C# project, I create a static Events class consisted of a player event and a player event receiver.
+For the MVU system to work, I need some way to create and receive messages while the game is running. For this, I use the built in Event system in Stride. So inside the `MyGame` C# project, I create a static Events class consisted of a Player EventKey and a Player EventReceiver.
 
 ```csharp
 using Stride.Engine;
@@ -42,7 +45,7 @@ namespace MyGame
 }
 ```
 
-The messages sent by these event will be of the type `string`. I want to use this event to tell me what direction to move to so I will create `"Up"`, `"Down"`, `"Left"`, `"Right"`, and `"Stop"` messages though I can also change the type to an enum as well.
+I want to send `"Up"`, `"Down"`, `"Left"`, `"Right"`, and `"Stop"` messages so the event will be of type `string`.
 
 It is important to set the event receiver to buffered. This will allows me to get all events that was fired instead of just the latest one.
 
@@ -76,7 +79,7 @@ type Msg =
     | Right
     | Stop
 ```
-Since I will use my PlayerEvent to create `"Up"`, `"Down"`, `"Left"`, `"Right"`, and `"Stop"` messages, I need to create a map event to convert them
+Since I will receive `"Up"`, `"Down"`, `"Left"`, `"Right"`, and `"Stop"` messages, I need to create a map function to convert them.
 
 ```fsharp
 let map message : Msg list = 
@@ -89,25 +92,25 @@ let map message : Msg list =
     | _ -> []
 ```
 
-I also need to create an empty and init function. The empty function will be used to initialize the model at the runtime. Then I use the init function to set the proper value once the data is loaded. 
+I also need to create an `empty` and `init` function. The `empty` function will be used to initialize the model at runtime. Then I use the `init` function to set the proper value once the data is loaded. In this case, I will store the reference to the Sphere Entity that I want to control once the scene is loaded. The init function also return a list of Msg for when an component need to send a message once initialized.
 
 ```fsharp
 let empty =
-        { Velocity = Vector3.Zero; Sphere = new Entity () }
+    { Velocity = Vector3.Zero; Sphere = new Entity () }
         
-    let init (scene : Scene) : Model * Msg list =
-        let sphere = scene.Entities.FirstOrDefault(fun x -> x.Name = "Sphere")     
-        { empty with Velocity = Vector3.Zero; Sphere = sphere }, []
+let init (scene : Scene) : Model * Msg list =
+    let sphere = scene.Entities.FirstOrDefault(fun x -> x.Name = "Sphere")     
+    { empty with Velocity = Vector3.Zero; Sphere = sphere }, []
 ```
 
-For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. Since I am modifying the objects directly instead of creating a new view, it might be appropriate to call this MVU.
+For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. Since I am modifying the objects directly instead of creating a new view, it might be inappropriate to call this MVU.
 
 ```fsharp
 let view model (deltaTime : float32) =
     model.Sphere.Transform.Position <- model.Sphere.Transform.Position + model.Velocity * deltaTime
 ```
 
-Lastly, for Update, I want to update the model velocity based on the messages
+Lastly, for Update, I want to update the model's Velocity based on the message.
 
 ```fsharp
 let update msg model (deltaTime : float32) =
@@ -124,11 +127,11 @@ let update msg model (deltaTime : float32) =
         { model with Velocity = Vector3.Zero }, []
 ```
 
-Copying from the elmish library, my update function return a new model along with a list of Messages. The list of message allow me to follow up with multiple messages. Also, I don't need to send a follow up message most of the time so I can return an empty list without having to create a special Empty message.
+Copying from the Elmish library, my update function return a new model along with a list of Messages. This allows me to follow up with multiple messages. Also, I don't need to send a follow up message most of the time so I can return an empty list without having to create a special `Empty` message.
 
 ### Game Component
 
-Just like the player component, we need a game component. This is a crucial part of the implementation since it is responsible for reading all the messages was created. It is also responsible for calling the view and update functions of other components. Create the `Game.fs` class right below `Player.fs` and add the following code:
+Just like the player component, we need a game component. This is a crucial part of the implementation since it is responsible for reading all the messages that was created. It is also responsible for calling the `view` and `update` functions of other components. Create the `Game.fs` class right below `Player.fs` and add the following code:
 
 ```fsharp
 //Game.fs
@@ -198,9 +201,25 @@ module Game =
 
 Like the Player component, there is the `Model`, `Msg`, `empty`, `init`, `view` and `update`. You can see how the view and update function of this class will call the respective functions for the Player component. The `view` and `update` function will need to be updated as more components are created.
 
-Let's take a look at the `mapEvent` function. This will take a generic `EventReceiver`, a `eventMap` function, and a `listMap` function. The `EventReceiver` is the `PlayerEventListener` object inside the `Events` class of the `MyGame` project. The `eventMap` is the `map` function inside the `Player` component class. This is so we can convert the string messages from the `PlayerEvent` into a type checked `Msg` for the `Player` component. Lastly, the `listMap` is a basic `List.map` function since we need a list of `Game Msg` but we only have a list of `Player Msg` so we need to convert them. All this is so that `mapEvent` can be generic and can handle multiple events.
+The `Model` for the Game component will contain the model of the other component. In this case, there is only the Player model
 
-The `mapEvent` function will be called by the `mapAllEvent` function. Thanks to the generic `mapEvent` function, more events can be added as needed like so:
+The `Msg` will be a discriminated union of the other component msg.
+
+The `init` function will call the `Player.init` function and also convert any Player Msg into the appropriate Game Msg.
+
+`update` required a fold function and the accumulator is the state and follow up messages that can change after every update function for each message.
+
+The `mapEvent` and `mapAllEvent` functions work together to read all event messages. `mapEvent` is designed to be generic so only `mapAllEvent` would need to be change to add new events.
+
+>Let's take a look at the `mapEvent` function. This will take an `eventReceiver`, a `eventMap` function, and a `listMap` function. 
+>
+>The `eventReceiver` is the `PlayerEventListener` created inside the `Events` class of the `MyGame` project. 
+>
+>The `eventMap` is the `map` function inside the `Player` component class. This is so we can convert the string messages from the `PlayerEvent` into a type checked `Msg` for the `Player` component. 
+>
+>Lastly, the `listMap` is a basic `List.map` function since we need a list of `Game Msg` but we only have a list of `Player Msg` so we need to convert them. All this is so that `mapEvent` can be generic and can handle multiple events.
+
+Thanks to the generic `mapEvent` function, more events can be added as needed like so:
 
 ```fsharp
 let mapAllEvent () : Msg list =
@@ -215,7 +234,7 @@ let mapAllEvent () : Msg list =
 
 ### A MVU Game Class    
 
-Now that all the components are created, I need to modify the game update loop. Copying Svetol's implementation, I create a new class derived from the base Stride Game class inside the `Program.fs` file. This class have two new members, Messages and State. Because State and Messages are class members, I can't pass in a Scene to grab the actual value until the BeginRun function is executed.
+Now that all the components are created, I need to modify the game update loop. Copying Svetol's implementation, I create a new class derived from the base Stride Game class inside the `Program.fs` file. 
 
 ```fsharp
 //Program.cs
@@ -251,9 +270,11 @@ type MvuGame() =
         base.Destroy()
 ```
 
-`BeginRun` relies on `Game.init` to initialize the `State` and `Messages` properties.
+This class have two new members, Messages and State. Because State and Messages are class members, I can't pass in a Scene to grab the actual value until the BeginRun function is executed.
 
-`Update` relies on `Game.mapAllEvent` to get messages from all events. It will then call `Game.update` to process all the messages. In this implementation, I have it so that all followup messages will be handled in the next frame update. Another implementation will have the update continued until no followup messages is received rather handling the followup messages in the next frame. However, this implemtation is simpler and prevent infinite loop from messages following each other.
+`BeginRun` is modified to call `Game.init` to initialize the `State` and `Messages` properties.
+
+`Update` now call `Game.mapAllEvent` to get all event messages. It will then call `Game.update` to process all messages. In this implementation, I have it so that any follow up messages will be handled in the next frame update. Another implementation will have the update continued until no follow up message is received instead. However, this is simpler and prevent infinite loop from messages following each other.
 
 ### Creating a C# script
 
@@ -322,7 +343,7 @@ Assign the script to the Sphere entity. Assign the keys in the editor and move t
   </video>
 </figure>
 
-Finally, go to your platform project(MyGame.Windows in this case) and replace the following in MyGameApp.cs
+Finally, go to your platform project(`MyGame.Windows` in this case) and replace the following in MyGameApp.cs
 
 ```csharp
 using (var game = new Game())
