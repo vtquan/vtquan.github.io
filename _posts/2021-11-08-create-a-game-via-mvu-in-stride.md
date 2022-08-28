@@ -5,7 +5,7 @@ excerpt: Create a game in MVU style using the Stride Engine
 date: 2021-11-08
 modified: 2022-08-26
 categories: [FSharp]
-tags: [Game Jam, Stride]
+tags: [Game Jam, Stride, Game Dev]
 comments: true
 share: true
 ---
@@ -16,7 +16,7 @@ Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-min
 
 ### New Project
 
-Starting from the basic solution created by Stride, add a new F# class library called `MyGame.Core`, I renamed `Library.fs` to `Program.fs`, and included all the Stride nuget packages from the `MyGame` project. Save the solution and make sure go to the Stride editor and select File -> Reload Project. Otherwise, the Stride editor will remove your F# project from the solution whenever changes are made. Another issue is that the Stride editor will try to build with fsc.exe and fail. You can build the F# project first through Visual Studio then run the project via the Editor or run the project entirely through Visual Studio.
+Starting from the basic solution created by Stride, add a new F# class library called `MyGame.Core`, I renamed `Library.fs` to `Program.fs`, and included all the Stride nuget packages from the `MyGame` project. Then add `MyGame` project as a reference to MyGame.Core. Then add `MyGame.Core` as a project reference in `MyGame.Windows`. Make sure to save the solution and make sure go to the Stride editor and select File -> Reload Project. Otherwise, the Stride editor will remove your F# project from the solution whenever changes are made. Another issue is that the Stride editor will try to build with fsc.exe and fail. You can build the F# project first through Visual Studio then run the project via the Editor or run the project entirely through Visual Studio.
 
 ![Setup]({{ site.url }}/assets/images/mvu-stride/fsc-error.png)
 
@@ -51,7 +51,7 @@ It is important to set the event receiver to buffered. This will allows me to ge
 
 ### Player Component
 
-The current scene will have only a ball Entity so let's create a MVU component for moving the ball. Create a new `Player.fs` above `Program.fs`. For my model, I want to hold the velocity of the ball and ball Enitity.
+The current scene will have only a Sphere Entity so let's create a MVU component for moving the ball. Create a new `Player.fs` above `Program.fs`. For my model, I want to hold the velocity of the ball and ball Enitity.
 
 ```fsharp
 //Player.fs
@@ -92,7 +92,7 @@ let map message : Msg list =
     | _ -> []
 ```
 
-I also need to create an `empty` and `init` function. The `empty` function will be used to initialize the model at runtime. Then I use the `init` function to set the proper value once the data is loaded. In this case, I will store the reference to the Sphere Entity that I want to control once the scene is loaded. The init function also return a list of Msg for when an component need to send a message once initialized.
+I also need to create an `empty` and `init` function. The `empty` function will be used to initialize the model at runtime. But since I need a reference to the Sphere entity that I can't get at runtime, I have an `init` function to set the proper value once the data is loaded. Once the scene is loaded can I get the reference to my Sphere entity. The init function also return a list of Msg for when an component need to send a message once initialized.
 
 ```fsharp
 let empty =
@@ -102,6 +102,8 @@ let init (scene : Scene) : Model * Msg list =
     let sphere = scene.Entities.FirstOrDefault(fun x -> x.Name = "Sphere")     
     { empty with Velocity = Vector3.Zero; Sphere = sphere }, []
 ```
+
+I like to reuse the `empty` Record to create the `init` Record because it saves me from repeating my code to initialize the value for my labels. This is especially handy for long Record.
 
 For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. Since I am modifying the objects directly instead of creating a new view, it might be inappropriate to call this MVU.
 
@@ -151,6 +153,18 @@ module Game =
     type Msg =
         | PlayerMsg of Player.Msg
 
+    let empty =
+        { PlayerModel = Player.empty }
+        
+    let init (scene : Scene) : Model * Msg list =
+        let playerModel, playerMsgs = Player.init scene
+        let gameMsgs =
+            [
+                yield! List.map (PlayerMsg) playerMsgs
+            ]
+            |> List.distinct
+        { empty with PlayerModel = playerModel }, gameMsgs
+
     let private mapEvent (eventReceiver : EventReceiver<'a>) (eventMap : 'a -> 'b list) (listMap : 'b list -> Msg list) =   
         let eventList = (Seq.empty).ToList()
         let numEvent = eventReceiver.TryReceiveAll(eventList)
@@ -168,18 +182,6 @@ module Game =
                 yield! mapEvent MyGame.Events.PlayerEventListener Player.map (List.map PlayerMsg)
             ] |> List.distinct
         messages
-
-    let empty =
-        { PlayerModel = Player.empty }
-        
-    let init (scene : Scene) : Model * Msg list =
-        let playerModel, playerMsgs = Player.init scene
-        let gameMsgs =
-            [
-                yield! List.map (PlayerMsg) playerMsgs
-            ]
-            |> List.distinct
-        { PlayerModel = playerModel }, gameMsgs
 
     let view (state : Model) (gameTime : GameTime) =
         let deltaTime = float32 gameTime.Elapsed.TotalSeconds
