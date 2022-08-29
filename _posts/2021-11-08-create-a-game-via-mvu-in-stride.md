@@ -12,7 +12,7 @@ share: true
 
 ### Background
 
-Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into [Stride Engine](https://www.stride3d.net). I wanted to create a custom implementation of the base Game class so that the game update loop would be better suited to a functional approach. I attempted to use [Garnet](https://github.com/bcarruthers/garnet) but I don't have enough experience with ECS system to create an implementation. I then pivot to a MVU architecture which I am familiar with. The plan was to use the elmish library but I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed since then. The following is about the current implementation.
+Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into [Stride Engine](https://www.stride3d.net), I want to create a custom implementation of the base Game class so that the game update loop would be better suited to a functional approach. I attempted to use [Garnet](https://github.com/bcarruthers/garnet) but I don't have enough experience with ECS system to create an implementation. I then pivot to a MVU architecture using the elmish library. However I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed since then.
 
 ### New Project
 
@@ -105,7 +105,7 @@ let init (scene : Scene) : Model * Msg list =
 
 I like to reuse the `empty` Record to create the `init` Record because it saves me from repeating my code to initialize the value for my labels. This is especially handy for long Record.
 
-For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. Since I am modifying the objects directly instead of creating a new view, it might be inappropriate to call this MVU.
+For the View, I want to make the ball move depending on the velocity. The delta time is also passed so that movement is framerate independent. Since I am modifying the objects directly, it might be inappropriate to call this MVU.
 
 ```fsharp
 let view model (deltaTime : float32) =
@@ -129,7 +129,7 @@ let update msg model (deltaTime : float32) =
         { model with Velocity = Vector3.Zero }, []
 ```
 
-Copying from the Elmish library, my update function return a new model along with a list of Messages. This allows me to follow up with multiple messages. Also, I don't need to send a follow up message most of the time so I can return an empty list without having to create a special `Empty` message.
+Copying from the Elmish library, my update function return a new model along with a list of Messages. This allows me to follow up with multiple messages. Also, I can return an empty list without having to create a special `Empty` message when I don't need follow up message.
 
 ### Game Component
 
@@ -183,22 +183,22 @@ module Game =
             ] |> List.distinct
         messages
 
-    let view (state : Model) (gameTime : GameTime) =
+    let view (gameModel : Model) (gameTime : GameTime) =
         let deltaTime = float32 gameTime.Elapsed.TotalSeconds
 
-        Player.view state.PlayerModel deltaTime
+        Player.view gameModel.PlayerModel deltaTime
 
-    let update (state : Model) (cmds : Msg list) (gameTime : GameTime) =
+    let update (gameModel : Model) (cmds : Msg list) (gameTime : GameTime) =
         let deltaTime = float32 gameTime.Elapsed.TotalSeconds
 
-        let updateFold ((state, msgs) : Model * Msg list) cmd  = 
+        let updateFold ((gameModel, msgs) : Model * Msg list) cmd  = 
             match cmd with
             | PlayerMsg(m) ->
-                let (model,msg) = Player.update m state.PlayerModel deltaTime
-                { state with PlayerModel = model }, msgs @ msg
+                let (model,msg) = Player.update m gameModel.PlayerModel deltaTime
+                { gameModel with PlayerModel = model }, msgs @ msg
 
-        let newState, nextMessages = List.fold updateFold (state, []) cmds
-        newState , List.distinct nextMessages
+        let newModel, newMessages = List.fold updateFold (gameModel, []) cmds
+        newModel , List.distinct newMessages
 ```
 
 Like the Player component, there is the `Model`, `Msg`, `empty`, `init`, `view` and `update`. You can see how the view and update function of this class will call the respective functions for the Player component. The `view` and `update` function will need to be updated as more components are created.
@@ -376,9 +376,9 @@ The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tre
 
 ### Closing Thoughts
 
-One benefit of this approach is that it doesn't interfere with using the engine as designed. You can still create C# script and use all the editor functionalities. You have a choice on whether to implement a feature in a functional or object oriented style. Another benefit is that this approach can be done with other engine with a central game class and an event system. 
+One benefit of this approach is that it doesn't interfere with using the engine as designed. You can still create C# script and use all the editor functionalities. You have a choice on whether to implement a feature in a functional or object oriented style. Another benefit is that this approach can be done with other C# engine with a central game class and an event system. 
 
-I have not run any benchmark so I don't know how this architecture will scale for large games but there is no multithreading. Two places that stand out is mapping all the event messages and running the update & view functions for each components. If performance is a major concern, the steps to modify the game class shown here are applicable to setting up an ECS architecture.
+I have not run any benchmark so I don't know how this will scale for large games but there is no multithreading. Two potential places for multithreading is mapping all the event messages and running the update & view functions for each components. If performance is a major concern, I believe the steps to modify the game class shown here can be used to set up an ECS architecture.
 
 Lastly, it is not shown here but it is common for a component to send message to another component either in the `update` or `view` function. One example is a Coin component telling the Score component to increase the score once collected. There are many ways to accomplish this in an MVU architecture but the easiest way for me is to call the Events to send messages like so:
 
