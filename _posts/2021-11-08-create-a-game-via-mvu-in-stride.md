@@ -372,4 +372,18 @@ Run it either from Visual Studio or The Stride Editor for the following result
 </figure>
 
 
-The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/BasicMvu) and the original proof of concept [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) with smoother movement and a jump function.
+The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/BasicMvu) and the original proof of concept [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept).
+
+### Closing Thoughts
+
+One benefit of this approach is that it doesn't interfere with using the engine as designed. You can still create C# script and use all the editor functionality. You have a choice on whether to implement a feature in a functional or object oriented style. I have not run any benchmark so I don't know how this architecture will scale for large games. Something like a Data Oriented Programming approach with the Model containing data for multiple Entities and looping through each one on update is probably the ideal component. A good improvement is to add some multithreading. Two places that stand out is mapping all the event messages and running the update & view functions for each components. If performance is a major concern, the steps to modify the game class shown here are applicable to setting up an ECS architecture. 
+
+Lastly, it is not shown here but it is common for component to send message to another component either in the update or view function. There are many ways to accomplish this in an MVU architecture but the easiest way for me is to call the Events inside the C# project to send messages like so:
+
+```fsharp
+let update msg model (deltaTime : float32) =
+    match msg with        
+    | Win -> 
+        MyGame.Events.ScoreEventKey.Broadcast("Increase");
+        model, []
+```
