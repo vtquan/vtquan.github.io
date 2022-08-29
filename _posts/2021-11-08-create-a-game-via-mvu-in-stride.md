@@ -12,7 +12,7 @@ share: true
 
 ### Background
 
-Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into Stride Engine. I wanted to create a custom implementation of the base Game class so that the game update loop would be better suited to a functional approach. I first attempted to use [Garnet](https://github.com/bcarruthers/garnet) but I don't have enough experience with ECS system to create an implementation. I then pivot to a MVU system which I am familiar with. The plan was to use the elmish library but I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed since then. The following is about the current implementation.
+Inspired by the blog post where [Svetol ECS](https://www.sebaslab.com/svelto-miniexample-7-stride-engine-demo/) was implemented into [Stride Engine](https://www.stride3d.net). I wanted to create a custom implementation of the base Game class so that the game update loop would be better suited to a functional approach. I attempted to use [Garnet](https://github.com/bcarruthers/garnet) but I don't have enough experience with ECS system to create an implementation. I then pivot to a MVU architecture which I am familiar with. The plan was to use the elmish library but I could not get the game engine update loop and elmish loop to work together so I rolled my own. The original proof of concept can be found [here](https://github.com/vtquan/MVU-Stride-Demo/tree/main/InitialProofOfConcept) but my implementation have changed since then. The following is about the current implementation.
 
 ### New Project
 
@@ -215,7 +215,7 @@ The `mapEvent` and `mapAllEvent` functions work together to read all event messa
 
 >Let's take a look at the `mapEvent` function. This will take an `eventReceiver`, a `eventMap` function, and a `listMap` function. 
 >
->The `eventReceiver` is the `PlayerEventListener` created inside the `Events` class of the `MyGame` project. 
+>The `eventReceiver` will be the EventListener for your component. In this case, it is the `PlayerEventListener` created inside the `Events` class of the `MyGame` project. 
 >
 >The `eventMap` is the `map` function inside the `Player` component class. This is so we can convert the string messages from the `PlayerEvent` into a type checked `Msg` for the `Player` component. 
 >
@@ -249,12 +249,12 @@ open Game
 type MvuGame() =
     inherit Game()
 
-    let mutable State, Messages = Game.empty,[]
+    let mutable Model, Messages = Game.empty, []
         
     override this.BeginRun () = 
         let mainScene = this.Content.Load<Scene>("MainScene")
-        let state, messages = init mainScene
-        State <- state
+        let model, messages = init mainScene
+        Model <- model
         Messages <- messages    
         
     override this.Update gameTime =
@@ -262,21 +262,21 @@ type MvuGame() =
             
         Messages <- Messages @ mapAllEvent ()
 
-        let newState, newMessages = update State Messages gameTime
-        State <- newState
-        Messages <- newMessages
+        let model, messages = update Model Messages gameTime
+        Model <- model
+        Messages <- messages
 
-        view State gameTime |> ignore
+        view Model gameTime |> ignore
 
     override this.Destroy () =
         base.Destroy()
 ```
 
-This class have two new members, Messages and State. Because State and Messages are class members, I can't pass in a Scene to grab the actual value until the BeginRun function is executed.
+This class have two new members, `Model` and `Messages`. Because they are class members, I can't pass in a Scene to grab the actual value.
 
-`BeginRun` is modified to call `Game.init` to initialize the `State` and `Messages` properties.
+In `BeginRun`, I will pass the current scene to `Game.init` to initialize the `Model` and `Messages` properties.
 
-`Update` now call `Game.mapAllEvent` to get all event messages. It will then call `Game.update` to process all messages. In this implementation, I have it so that any follow up messages will be handled in the next frame update. Another implementation will have the update continued until no follow up message is received instead. However, this is simpler and prevent infinite loop from messages following each other.
+`Update` now call `Game.mapAllEvent` to get all event messages. It will then call `Game.update` to process all messages. In this implementation, I have it so that any follow up messages will be handled in the next frame. Another implementation will have the update continued until no follow up message is received instead. However, this is simpler and prevent infinite loop from messages following each other.
 
 ### Creating a C# script
 
@@ -337,7 +337,7 @@ namespace MyGame
 
 This script will check on every frame if a specific key is pressed. If pressed, it will send the corresponding message. 
 
-Assign the script to the Sphere entity. Assign the keys in the editor and move the camera up to a higher position to view the area.
+Follow the video to assign the script to the Sphere entity. Assign the keys in the editor and move the camera up to a higher position to view the area.
 
 <figure class="video_container">
   <video controls="true" allowfullscreen="true" style="width: 100%;">
@@ -376,14 +376,16 @@ The final project can found [here](https://github.com/vtquan/MVU-Stride-Demo/tre
 
 ### Closing Thoughts
 
-One benefit of this approach is that it doesn't interfere with using the engine as designed. You can still create C# script and use all the editor functionality. You have a choice on whether to implement a feature in a functional or object oriented style. I have not run any benchmark so I don't know how this architecture will scale for large games. Something like a Data Oriented Programming approach with the Model containing data for multiple Entities and looping through each one on update is probably the ideal component. A good improvement is to add some multithreading. Two places that stand out is mapping all the event messages and running the update & view functions for each components. If performance is a major concern, the steps to modify the game class shown here are applicable to setting up an ECS architecture. 
+One benefit of this approach is that it doesn't interfere with using the engine as designed. You can still create C# script and use all the editor functionalities. You have a choice on whether to implement a feature in a functional or object oriented style. Another benefit is that this approach can be done with other engine with a central game class and an event system. 
 
-Lastly, it is not shown here but it is common for component to send message to another component either in the update or view function. There are many ways to accomplish this in an MVU architecture but the easiest way for me is to call the Events inside the C# project to send messages like so:
+I have not run any benchmark so I don't know how this architecture will scale for large games but there is no multithreading. Two places that stand out is mapping all the event messages and running the update & view functions for each components. If performance is a major concern, the steps to modify the game class shown here are applicable to setting up an ECS architecture.
+
+Lastly, it is not shown here but it is common for a component to send message to another component either in the `update` or `view` function. One example is a Coin component telling the Score component to increase the score once collected. There are many ways to accomplish this in an MVU architecture but the easiest way for me is to call the Events to send messages like so:
 
 ```fsharp
 let update msg model (deltaTime : float32) =
     match msg with        
-    | Win -> 
+    | Collect -> 
         MyGame.Events.ScoreEventKey.Broadcast("Increase");
         model, []
 ```
