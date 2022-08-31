@@ -115,7 +115,7 @@ let view model (deltaTime : float32) =
 Lastly, for Update, I want to update the model's Velocity based on the message.
 
 ```fsharp
-let update msg model (deltaTime : float32) =
+let update msg model (deltaTime : float32) : Model * Msg list =
     match msg with        
     | Left -> 
         { model with Velocity = model.Velocity - Vector3.UnitX }, []                        
@@ -195,7 +195,7 @@ module Game =
             match cmd with
             | PlayerMsg(m) ->
                 let (model,msg) = Player.update m gameModel.PlayerModel deltaTime
-                { gameModel with PlayerModel = model }, msgs @ msg
+                { gameModel with PlayerModel = model }, msgs @ (List.map PlayerMsg msg)
 
         let newModel, newMessages = List.fold updateFold (gameModel, []) cmds
         newModel , List.distinct newMessages
